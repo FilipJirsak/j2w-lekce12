@@ -6,12 +6,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 
@@ -20,7 +20,7 @@ import java.util.Locale;
  */
 @Controller
 public class SvatkyController {
-  private final SimpleDateFormat dateFormat = new SimpleDateFormat("d. MMM yyyy", new Locale("cs-CZ"));
+  private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("d. MMMM yyyy", new Locale("cs", "CZ"));
 
   private final SvatkyService svatkyService;
 
@@ -51,14 +51,14 @@ public class SvatkyController {
     return json(svatkyService.tomorrow());
   }
 
-  @GetMapping(path = "/{date}")
-  public ModelAndView date(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-    return html(date, dateFormat.format(date));
+  @GetMapping(path = "/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}")
+  public ModelAndView date(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    return html(date, date.format(dateFormat));
   }
 
-  @GetMapping(path = "/{date}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(path = "/{date:[0-9]{4}-[0-9]{2}-[0-9]{2}}", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
-  public List<String> dateJson(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+  public List<String> dateJson(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
     return json(date);
   }
 
@@ -72,6 +72,5 @@ public class SvatkyController {
 
   private List<String> json(LocalDate date) {
     return svatkyService.jmeniny(date);
-
   }
 }
